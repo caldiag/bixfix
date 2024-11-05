@@ -9,7 +9,7 @@ from . import patch
 # esta função realiza uma série de validações em um servidor, algumas das quais irão levantar erros. ela os captura e gera logs
 # conforme necessário, além de coletar servidores falhados para parametrizar a função de patch.
 
-def start(stores: list[str], user: str, password: str, passive: bool, force_fix: str):
+def start(stores, args):
   ensure_directory_exists('success')
   ensure_directory_exists('no_zabbix')
   ensure_directory_exists('no_auth')
@@ -17,24 +17,24 @@ def start(stores: list[str], user: str, password: str, passive: bool, force_fix:
   ensure_directory_exists('fix_logs/success')
   ensure_directory_exists('fix_logs/error')
 
-  if passive and force_fix:
+  if args.passive and args.force_fix:
     print("--force-fix e --passive são mutuamente exclusivos.")
     return
 
-  if force_fix:
-    start, end = map(int, force_fix.split(','))
-    patch.start(stores[start:end+1], user, password)
+  if args.force_fix:
+    start, end = map(int, args.force_fix.split(','))
+    patch.start(stores[start:end+1], args)
     return
   
   no_zabbix_stores = []
 
   for store in stores:
-      success_file = f'../logs/success/{store}.txt'
-      no_zabbix_file = f'../logs/no_zabbix/{store}.txt'
-      misc_error_file = f'../logs/misc_error/{store}.txt'
-      no_auth_file = f'../logs/no_auth/{store}.txt'
+      success_file = f'logs/success/{store}.txt'
+      no_zabbix_file = f'logs/no_zabbix/{store}.txt'
+      misc_error_file = f'logs/misc_error/{store}.txt'
+      no_auth_file = f'logs/no_auth/{store}.txt'
 
-      print(f"Trying {store}")
+      print(f"\033[94mSONDANDO {store}\033[0m")
       try:
         conn = Connection(host=f"10.{store[:2] + '.' + store[2:]}.1", user=user, connect_kwargs={"password": password}, connect_timeout=2)
 
@@ -81,5 +81,5 @@ def start(stores: list[str], user: str, password: str, passive: bool, force_fix:
           file.write(f"Error: {e}")
 
   if not passive:
-    patch.start(no_zabbix_stores, user, password)
+    patch.start(no_zabbix_stores, args)
     return
