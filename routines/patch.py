@@ -36,7 +36,7 @@ def start(stores, args):
       print(systemctl.stdout + systemctl.stderr)
 
       try:
-        # um erro aqui pode não ser fatal. apenas printar.
+        # um erro aqui pode não ser fatal (caso a pasta já exista, por exemplo). apenas printar.
         dir1 = conn.sudo(r"mkdir -p /etc/zabbix/zabbix_agentd.d", hide=True)
         dir2 = conn.sudo(r"mkdir -p /var/log/zabbix", hide=True)
         res.append(dir1.stdout + dir1.stderr + dir2.stdout + dir2.stderr)
